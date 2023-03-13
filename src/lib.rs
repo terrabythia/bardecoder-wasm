@@ -8,7 +8,9 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-fn qr_from_base64_string(base64: &str, format: image::ImageFormat) -> Result<Vec<String>, String> {
+pub type QrResult = Result<Vec<String>, String>;
+
+fn qr_from_base64_string(base64: &str, format: image::ImageFormat) -> QrResult {
     let bytes = match general_purpose::STANDARD.decode(base64) {
         Ok(bytes) => bytes,
         Err(e) => {
@@ -35,7 +37,7 @@ fn qr_from_base64_string(base64: &str, format: image::ImageFormat) -> Result<Vec
     Ok(valid_results)
 }
 
-fn wrap_qr_result(result: Result<Vec<String>, String>) -> Result<JsValue, JsValue> {
+fn wrap_qr_result(result: QrResult) -> Result<JsValue, JsValue> {
     match result {
         Ok(results) => serde_wasm_bindgen::to_value(&results).map_err(|e| {
             println!("Error converting results to JsValue: {}", e);
@@ -83,4 +85,40 @@ pub async fn decode_base64_gif(base64: &str) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn decode_base64_webp(base64: &str) -> Result<JsValue, JsValue> {
     wrap_qr_result(qr_from_base64_string(base64, image::ImageFormat::WebP))
+}
+
+// add tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_qr_from_base64_string() {
+        let test_formats = [
+            (
+                image::ImageFormat::Png,
+                include_str!("../tests/fixtures/png_base64_image.txt"),
+            ),
+            (
+                image::ImageFormat::Jpeg,
+                include_str!("../tests/fixtures/jpeg_base64_image.txt"),
+            ),
+            (
+                image::ImageFormat::Gif,
+                include_str!("../tests/fixtures/gif_base64_image.txt"),
+            ),
+            (
+                image::ImageFormat::WebP,
+                include_str!("../tests/fixtures/webp_base64_image.txt"),
+            ),
+        ];
+
+        for (format, base64_string) in test_formats.iter() {
+            let result = qr_from_base64_string(base64_string, *format);
+            assert!(result.is_ok());
+            let results = result.unwrap();
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0], "http://my.qrvoice.net/1moVKIJ");
+        }
+    }
 }
