@@ -10,18 +10,59 @@
 
 <body>
 
+    <video id="video"></video>
+    <canvas id="canvas"></canvas>
+    <div id="results-wrapper">
+        <h3>Results</h3>
+        <div id="results"></div>
+    </div>
+
     <script type="module">
-        import base64Jpeg from "./example/base64_jpeg.js";
+        const INTERVAL_MS = 1000;
+
         import init, { decode_base64_jpeg } from "../pkg/bardecoder_wasm.js";
         init().then(async () => {
             if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
-                navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: {
-                            exact: 'environment'
+                const resultsEl = document.getElementById('results');
+                const canvasEl = document.getElementById('canvas');
+                const videoEl = document.getElementById('video');
+
+                const drawAndDecode = async () => {
+                    console.time("drawAndDecode");
+                    ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+                    const dataURL = canvasEl.toDataURL('image/jpeg', 1.0);
+                    const base64 = dataURL.replace(/^data:image\/jpeg;base64,/, "");
+                    if (base64) {
+                        try {
+                            const result = await decode_base64_jpeg(base64);
+                            console.timeEnd("drawAndDecode");
+                            const pre = document.createElement('pre');
+                            pre.innerText = JSON.stringify(result, null, 2);
+                            resultsEl.prepend(pre);
+                            console.log("Scan result: ", result);
+                        }
+                        catch (error) {
+                            console.error(error);
                         }
                     }
-                })
+                    setTimeout(drawAndDecode, INTERVAL_MS);
+                };
+
+                canvasEl.width = 640;
+                canvasEl.height = 480;
+                const ctx = canvasEl.getContext('2d');
+
+                const src = await window.navigator.mediaDevices.getUserMedia({
+                    video: true
+                });
+                videoEl.srcObject = src;
+                videoEl.addEventListener("play", async () => {
+                    console.log("check now");
+                    drawAndDecode();
+                });
+
+                videoEl.play();
+
             }
         }).catch((error) => {
             console.error(error);
