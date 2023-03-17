@@ -2,7 +2,7 @@
 
 > Note: this is still a beta version of this package so the API may be changing completely until `1.0.0` is out.
 
-Scan QR codes in the browser using WebAssembly and is 100% written in Rust. Uses the awesome Rust library [bardecoder](https://github.com/piderman314/bardecoder) for decoding images with QR codes to their string value. The image data should be provided as base64 data string. In tests it now took about ~80ms for each scan. That includes drawing the current video frame on a canvas, getting the canvas content as a base64 encoded string, sending the data string to wasm and getting a result back. Would like to test this on lower end devices and against other solutions later.
+This library scans QR codes in the browser using WebAssembly and is 100% written in Rust. Uses the awesome Rust library [bardecoder](https://github.com/piderman314/bardecoder) for decoding images with QR codes to their string value. The image data should be provided as base64 data string. In tests it now took about ~80ms for each scan. That includes drawing the current video frame on a canvas, getting the canvas content as a base64 encoded string, sending the data string to wasm and getting a result back. Would like to test this on lower end devices and against other solutions later.
 
 ## Install
 run `cargo update`
