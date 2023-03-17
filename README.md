@@ -4,5 +4,6 @@ Scan barcodes and QR codes in the browser using WebAssembly. Uses the Rust libra
 
 Roadmap
 - [x] add unit tests for basic functions
-- [ ] add tests for wasm_bindgen functions
+- [x] add tests for wasm_bindgen functions
 - [ ] update example html page to use camera
+- [ ] optimze crate feature flags where possible for smaller wasm size
