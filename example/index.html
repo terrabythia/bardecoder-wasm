@@ -14,7 +14,15 @@
         import base64Jpeg from "./example/base64_jpeg.js";
         import init, { decode_base64_jpeg } from "../pkg/bardecoder_wasm.js";
         init().then(async () => {
-            console.log(await decode_base64_jpeg(base64Jpeg));
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: {
+                            exact: 'environment'
+                        }
+                    }
+                })
+            }
         }).catch((error) => {
             console.error(error);
         });
