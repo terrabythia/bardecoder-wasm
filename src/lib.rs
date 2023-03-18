@@ -49,15 +49,15 @@ fn wrap_qr_result(result: QrResult) -> Result<JsValue, JsValue> {
 
 #[wasm_bindgen]
 pub async fn decode_base64(base64: &str) -> Result<JsValue, JsValue> {
-    // TODO: this can be better
-    let (mime, pattern) = match base64.find(';') {
-        Some(index) => {
-            let mime = base64[0..index].replace("data:image/", "");
-            // 8 === "base64,".len() + 1
-            (mime, &base64[0..index + 8])
-        }
-        None => return Err(JsValue::from_str("Invalid base64 data")),
+    let (mime, pattern) = if let Some(index) = base64.find(';') {
+        (
+            base64[0..index].replace("data:image/", ""),
+            &base64[0..index + 8], // 8 === "base64,".len() + 1
+        )
+    } else {
+        return Err(JsValue::from_str("Invalid base64 data"));
     };
+
     let mime: &str = &mime;
     match mime {
         "jpg" | "jpeg" => decode_base64_jpeg(&base64[pattern.len()..]).await,
